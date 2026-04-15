@@ -1,5 +1,7 @@
 import mysql from 'mysql2/promise';
 
+const db = mysql.createPool(process.env.DATABASE_URL);
+
 export default async function handler(req, res) {
 
   if (req.method !== 'POST') {
@@ -10,19 +12,16 @@ export default async function handler(req, res) {
 
     const { fullName, email, phone, otherNames, broker } = req.body;
 
-   const db = await mysql.createConnection(process.env.DATABASE_URL.replace("mysql://", "mysql2://"));
-
     await db.execute(
       `INSERT INTO users (full_name, email, phone, other_names, broker)
        VALUES (?, ?, ?, ?, ?)`,
       [fullName, email, phone, otherNames, broker]
     );
 
-    await db.end();
-
     return res.status(200).json({ message: 'Saved successfully' });
 
   } catch (error) {
+    console.error(error);
     return res.status(500).json({ error: error.message });
   }
-} 
+}
